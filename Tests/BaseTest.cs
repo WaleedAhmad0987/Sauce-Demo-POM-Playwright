@@ -10,6 +10,18 @@ public abstract class BaseTest
     protected IPage Page;
     protected IBrowserContext Context;
 
+    [OneTimeSetUp]
+    public async Task OneTimeSetup()
+    {
+        Playwright = await Microsoft.Playwright.Playwright.CreateAsync();
+        Browser = await Playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
+        {
+            Headless = false,
+            Channel = "chrome",
+            Args = new[] { "--start-maximized" }
+        });
+    }
+
     [SetUp]
     public async Task Setup()
     {
@@ -23,13 +35,17 @@ public abstract class BaseTest
 
         Context = await Browser.NewContextAsync(new BrowserNewContextOptions
         {
-            ViewportSize = null,
+            ViewportSize = new ViewportSize
+            {
+                Height = 780,
+                Width = 1400
+            },
             IgnoreHTTPSErrors = true,
             JavaScriptEnabled = true,
             HasTouch = false
         });
 
-        Page = await Context.NewPageAsync();
+        //Page = await Context.NewPageAsync();
         //await Page.SetDefaultNavigationTimeoutAsync(30000); // Increased timeout for stability
         //await Page.SetDefaultTimeoutAsync(10000);
     }
@@ -37,6 +53,7 @@ public abstract class BaseTest
     [TearDown]
     public async Task Teardown()
     {
+        Thread.Sleep(3000);
         try
         {
             if (Page != null)
